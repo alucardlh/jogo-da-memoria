@@ -76,11 +76,11 @@
 						div = document.createElement('div')
 						main.appendChild(div)
 					}
+					table[x][y] = null
 					let id = getRandomId(0, size/2-1)
 					if (already.length == size/2-1) already.splice(0)
 					else already.push(id)
 					div = document.querySelector(`div:nth-of-type(${x+1})`)
-					table[x][y] = null
 					let span = document.createElement('span')
 					span.setAttribute(`data-id`, id)
 					span.setAttribute(`data-x-y`, `${x}-${y}`)
@@ -107,8 +107,8 @@
 				opened++
 				let el = e.target.parentNode.parentNode
 				if (el.classList.contains('found')) return flipAll()
-				cond1 = lastOpened && lastOpened.getAttribute('data-id') == el.getAttribute('data-id')
-				cond2 = lastOpened && lastOpened.getAttribute('data-x-y') != el.getAttribute('data-x-y')
+				let cond1 = lastOpened && lastOpened.getAttribute('data-id') == el.getAttribute('data-id')
+				let cond2 = lastOpened && lastOpened.getAttribute('data-x-y') != el.getAttribute('data-x-y')
 				if (cond1 && cond2) {
 					el.classList.add('found')
 					lastOpened.classList.add('found')
@@ -120,7 +120,8 @@
 					audio.currentTime = 0
 					audio.play()
 					opened = 0
-					return lastOpened = null
+					lastOpened = null
+					return
 				}
 				audio.src = './score.mp3'
 				audio.currentTime = 0
