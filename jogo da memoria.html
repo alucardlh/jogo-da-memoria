@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+			main {
+				margin: 0 auto;
+				width: fit-content;
+			}
+			span {
+				position: relative;
+				display: inline-flex;
+				justify-content: center;
+				align-items: center;
+				width: 100px;
+				height: 100px;
+				flex: 1 1 0;
+				margin: 2px;
+				font-weight: bold;
+				font-size: 1.75rem;
+				user-select: none;
+				perspective: 1000px;
+			}
+			span:not(.found) {
+				cursor: pointer;
+			}
+			span.active figure, span.found figure {
+				transform: rotateY(180deg);
+			}
+			span figure {
+				position: relative;
+				width: 100px;
+				height: 100px;
+				margin: 0;
+				transform-style: preserve-3d;
+				border: 2px solid silver;
+				border-radius: 8px;
+				transition: all 250ms ease-in-out;
+			}
+			span figure img, span figure figcaption {
+				display: inline-block;
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				backface-visibility: hidden;
+				border-radius: 6px;
+			}
+			span figure img {
+				object-fit: cover;
+				transform: rotateY(180deg);
+			}
+			span figure figcaption {
+				background-color: gray;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+		</main>
+		<script>
+			const size = 16
+			const audio = new Audio('./success.mp3')
+			const main = document.querySelector('main')
+			var found = 0
+			var opened = 0
+			var table = []
+			var already = []
+			var lastOpened = null
+			for (let x=0; x<(size/4); x++) {
+				for (let y=0; y<(size/4); y++) {
+					let div
+					if (!table[x]) {
+						table[x] = []
+						div = document.createElement('div')
+						main.appendChild(div)
+					}
+					let id = getRandomId(0, size/2-1)
+					if (already.length == size/2-1) already.splice(0)
+					else already.push(id)
+					div = document.querySelector(`div:nth-of-type(${x+1})`)
+					table[x][y] = null
+					let span = document.createElement('span')
+					span.setAttribute(`data-id`, id)
+					span.setAttribute(`data-x-y`, `${x}-${y}`)
+					let figure = document.createElement('figure')
+					let img = document.createElement('img')
+					img.src = `./${id}.png`
+					figure.appendChild(img)
+					let figcaption = document.createElement('figcaption')
+					figure.appendChild(figcaption)
+					span.appendChild(figure)
+					div.appendChild(span)
+				}
+			}
+			function getRandomId(min, max) {
+				let id = Math.floor(Math.random() * (max - min + 1)) + min
+				if (already.includes(id)) return getRandomId(min, max)
+				return id
+			}
+			function flipAll() {
+				document.querySelectorAll('span').forEach(el => el.classList.remove('active'))
+			}
+			document.onclick = e => {
+				if (document.querySelectorAll('span.active').length >= 2) return
+				opened++
+				let el = e.target.parentNode.parentNode
+				if (el.classList.contains('found')) return flipAll()
+				cond1 = lastOpened && lastOpened.getAttribute('data-id') == el.getAttribute('data-id')
+				cond2 = lastOpened && lastOpened.getAttribute('data-x-y') != el.getAttribute('data-x-y')
+				if (cond1 && cond2) {
+					el.classList.add('found')
+					lastOpened.classList.add('found')
+					el.classList.remove('active')
+					lastOpened.classList.remove('active')
+					found++
+					if (found >= size/2) audio.src = './fanfare.mp3'
+					else audio.src = './success.mp3'
+					audio.currentTime = 0
+					audio.play()
+					opened = 0
+					return lastOpened = null
+				}
+				audio.src = './score.mp3'
+				audio.currentTime = 0
+				audio.play()
+				el.classList.add('active')
+				if (opened >= 2) {
+					opened = 0
+					setTimeout(() => {
+						flipAll()
+					}, 1000)
+					return lastOpened = null
+				}
+				lastOpened = el
+			}
+		</script>
+	</body>
+</html>
